@@ -30,20 +30,4 @@ def lambda_handler(event, context):
     #  }
     return json.dumps(event)
 
-    #   decodedjson=json.loads.event['body']
-    #  Emp_ID=decodedjson['Emp_ID']
-    #  F_Name=decodedjson['F_Name']
-    # L_Name=decodedjson['L_Name']
-    #  Salary=decodedjson['Salary']
-
-    # Save_Employee(55,'pompo','koko',1000)
-
-#   decodedjson=json.loads.event['body']
-#  Emp_ID=decodedjson['Emp_ID']
-#  F_Name=decodedjson['F_Name']
-# L_Name=decodedjson['L_Name']
-#  Salary=decodedjson['Salary']
-
-
-
 
