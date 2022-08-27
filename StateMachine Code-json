@@ -1,0 +1,107 @@
+Comment: A description of my state machine
+StartAt: Schema Validation
+States:
+  Schema Validation:
+    Type: Task
+    Resource: arn:aws:states:::lambda:invoke
+    Parameters:
+      Payload.$: $
+      FunctionName: arn:aws:lambda:us-east-1:164987176561:function:SchemaValidation:$LATEST
+    Retry:
+      - ErrorEquals:
+          - Lambda.ServiceException
+          - Lambda.AWSLambdaException
+          - Lambda.SdkClientException
+        IntervalSeconds: 2
+        MaxAttempts: 6
+        BackoffRate: 2
+    Next: Is Valid Schema
+    ResultPath: $.Payload
+  Is Valid Schema:
+    Type: Choice
+    Choices:
+      - Variable: $.Payload.Payload.Status
+        BooleanEquals: false
+        Next: Fail
+    Default: Create Employee Dynamo
+  Fail:
+    Type: Fail
+  Create Employee Dynamo:
+    Type: Task
+    Resource: arn:aws:states:::lambda:invoke
+    Parameters:
+      FunctionName: arn:aws:lambda:us-east-1:164987176561:function:Emp_Sal_Tax:$LATEST
+      Payload.$: $
+    Retry:
+      - ErrorEquals:
+          - Lambda.ServiceException
+          - Lambda.AWSLambdaException
+          - Lambda.SdkClientException
+        IntervalSeconds: 2
+        MaxAttempts: 6
+        BackoffRate: 2
+    Next: Get Employee Dynamo
+    ResultPath: $.Payload
+  Get Employee Dynamo:
+    Type: Task
+    Resource: arn:aws:states:::lambda:invoke
+    Parameters:
+      Payload.$: $
+      FunctionName: arn:aws:lambda:us-east-1:164987176561:function:GetEmp:$LATEST
+    Retry:
+      - ErrorEquals:
+          - Lambda.ServiceException
+          - Lambda.AWSLambdaException
+          - Lambda.SdkClientException
+        IntervalSeconds: 2
+        MaxAttempts: 6
+        BackoffRate: 2
+    Next: Choice
+    ResultPath: $.Payload
+  Choice:
+    Type: Choice
+    Choices:
+      - Variable: $.Salary
+        StringGreaterThan: '5000'
+        Next: Wai to check old Salary
+    Default: Wait to check before delete
+  Wai to check old Salary:
+    Type: Wait
+    Seconds: 30
+    Next: Update Employee  Salary Dynamo
+  Wait to check before delete:
+    Type: Wait
+    Seconds: 40
+    Next: DynamoDB DeleteItem
+  DynamoDB DeleteItem:
+    Type: Task
+    Resource: arn:aws:states:::dynamodb:deleteItem
+    Parameters:
+      TableName: Employee
+      Key:
+        Emp_ID:
+          N.$: $.Emp_ID
+        F_Name:
+          S.$: $.F_Name
+    Next: Employee Deleted
+  Employee Deleted:
+    Type: Succeed
+  Update Employee  Salary Dynamo:
+    Type: Task
+    Resource: arn:aws:states:::lambda:invoke
+    OutputPath: $.Payload
+    Parameters:
+      Payload.$: $
+      FunctionName: >-
+        arn:aws:lambda:us-east-1:164987176561:function:UpdateTaxforEmployee:$LATEST
+    Retry:
+      - ErrorEquals:
+          - Lambda.ServiceException
+          - Lambda.AWSLambdaException
+          - Lambda.SdkClientException
+        IntervalSeconds: 2
+        MaxAttempts: 6
+        BackoffRate: 2
+    Next: Employee Salary Updated
+  Employee Salary Updated:
+    Type: Succeed
