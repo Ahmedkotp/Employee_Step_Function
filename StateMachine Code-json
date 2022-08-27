@@ -9,7 +9,7 @@ States:
       FunctionName: arn:aws:lambda:us-east-1:164987176561:function:SchemaValidation:$LATEST
     Retry:
       - ErrorEquals:
-          - Lambda.ServiceException
+          - Lambda.ServiceException 
           - Lambda.AWSLambdaException
           - Lambda.SdkClientException
         IntervalSeconds: 2
