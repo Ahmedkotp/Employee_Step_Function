@@ -85,7 +85,7 @@ States:
         F_Name:
           S.$: $.F_Name
     Next: Employee Deleted
-  Employee Deleted:
+  Employee Deleted: 
     Type: Succeed
   Update Employee  Salary Dynamo:
     Type: Task
